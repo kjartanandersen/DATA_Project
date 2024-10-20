@@ -144,7 +144,8 @@ class ResNet(nn.Module):
         z = self.bnIn(z)
         z = self.relu(z)
 
-        for l in self.stack1: z = l(z, shortcuts=self.shortcuts)
+        for l in self.stack1:
+            z = l(z, shortcuts=self.shortcuts)
 
         z = self.stack2a(z, shortcuts=self.shortcuts)
         for l in self.stack2b:

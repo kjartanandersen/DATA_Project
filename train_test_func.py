@@ -139,7 +139,7 @@ def train_net(n=3,
               scheduler=scheduler,
               MODEL_PATH=model_file)
 
-def test_net(n=3):
+def test_net(n=3, plain=False):
     # GLOBALS
     # -----------------------
     model_file = f'pretrained/plain_resnet_{6*n+2}.pt'
@@ -170,7 +170,10 @@ def test_net(n=3):
 
     print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
 
-    net = ResNet()
+    if plain:
+        net = ResNet(n, shortcuts=False)
+    else:
+        net = ResNet(n, shortcuts=True)
     net.load_state_dict(torch.load(model_file, weights_only=True))
 
     outputs = net(images)
