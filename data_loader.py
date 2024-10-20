@@ -5,6 +5,7 @@ import torch
 from torchvision import datasets
 from torchvision import transforms
 from torch.utils.data.sampler import SubsetRandomSampler
+from DatasetPicker import DatasetPicker
 
 def get_labels():
     return [
@@ -24,9 +25,12 @@ def get_data_loaders(data_dir,
                      batch_size,
                      train_transform,
                      test_transform,
+                     dataset,
                      shuffle=True,
                      num_workers=4,
-                     pin_memory=False):
+                     pin_memory=False,
+ ):
+
     """
     Adapted from: https://gist.github.com/kevinzakka/d33bf8d6c7f06a9d8c76d97a7879f5cb
 
@@ -50,16 +54,30 @@ def get_data_loaders(data_dir,
     - test_loader:  test set iterator.
     """
 
-    # Load the datasets
-    train_dataset = datasets.CIFAR10(
-        root=data_dir, train=True,
-        download=True, transform=train_transform,
-    )
+    if dataset == DatasetPicker.CIFAR10:
 
-    test_dataset = datasets.CIFAR10(
-        root=data_dir, train=False,
-        download=True, transform=test_transform,
-    )
+        # Load the datasets
+        train_dataset = datasets.CIFAR10(
+            root=data_dir, train=True,
+            download=True, transform=train_transform,
+        )
+
+        test_dataset = datasets.CIFAR10(
+            root=data_dir, train=False,
+            download=True, transform=test_transform,
+        )
+    elif dataset == DatasetPicker.FASHION_MNIST:
+        train_dataset = datasets.FashionMNIST(
+            root=data_dir, train=True,
+            download=True, transform=train_transform,
+        )
+
+        test_dataset = datasets.FashionMNIST(
+            root=data_dir, train=False,
+            download=True, transform=test_transform,
+        )
+    else:
+        raise ValueError("Invalid dataset")
 
     # Create loader objects
     train_loader = torch.utils.data.DataLoader(
