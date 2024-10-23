@@ -25,8 +25,7 @@ warnings.filterwarnings('ignore')
 # GLOBALS
 # -----------------------
 
-data_dir = 'data/cifar10'
-batch_size = 128
+
 
 
 # SET FINAL TRANSFORMS WITH NORMALISATION
@@ -37,41 +36,19 @@ batch_size = 128
 # [x] For testing, we only evaluate the single view of the original 32×32 image.
 
 
-# Normalisation parameters fo CIFAR10
-means = [0.4918687901200927, 0.49185976472299225, 0.4918583862227116]
-stds  = [0.24697121702736, 0.24696766978537033, 0.2469719877121087]
 
-normalize = transforms.Normalize(
-    mean=means,
-    std=stds,
-)
 
-train_transform = transforms.Compose([
-    # 4 pixels are padded on each side,
-    transforms.Pad(4),
-    # a 32×32 crop is randomly sampled from the
-    # padded image or its horizontal flip.
-    transforms.RandomHorizontalFlip(0.5),
-    transforms.RandomCrop(32),
-    transforms.ToTensor(),
-    normalize
-])
-
-test_transform = transforms.Compose([
-    # For testing, we only evaluate the single
-    # view of the original 32×32 image.
-    transforms.ToTensor(),
-    normalize
-])
-
-def train_net(n=3,
+def train_net(
+              train_loader,
+              test_loader,
+              n=3,
               epochs=164,
               lr=0.1,
               momentum=0.9,
               weight_decay=0.0001,
               milestones=[82, 123],
               gamma=0.1,
-              plain=False
+              plain=False,
     ):
 
 
@@ -107,15 +84,7 @@ def train_net(n=3,
     for n in ns:
         print(f'Training plain ResNet with {n} Layers')
         # Reload data
-        train_loader, test_loader = get_data_loaders(
-            data_dir,
-            batch_size,
-            train_transform,
-            test_transform,
-            shuffle=True,
-            num_workers=4,
-            pin_memory=True
-        )
+
 
         # Create model
         if plain:
@@ -127,8 +96,10 @@ def train_net(n=3,
                               weight_decay=weight_decay)
         scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
                                                    milestones=milestones, gamma=gamma)
-        results_file = f'results/plain_resnet_{6*n+2}.csv'
-        model_file = f'pretrained/plain_resnet_{6*n+2}.pt'
+
+
+        results_file = f'results/{"plain_" if plain else ""}resnet_{6*n+2}.csv'
+        model_file = f'pretrained/{"plain_" if plain else ""}resnet_{6*n+2}.pt'
         train(model,
               epochs,
               train_loader,
@@ -139,7 +110,7 @@ def train_net(n=3,
               scheduler=scheduler,
               MODEL_PATH=model_file)
 
-def test_net(n=3, plain=False):
+def test_net(train_transform, test_transform, n=3, plain=False, data_dir='data/cifar10', batch_size=128):
     # GLOBALS
     # -----------------------
     model_file = f'pretrained/plain_resnet_{6*n+2}.pt'
@@ -182,11 +153,3 @@ def test_net(n=3, plain=False):
 
     print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
                                   for j in range(4)))
-
-
-if __name__ == '__main__':
-    # train_net()
-    test_net(9)
-
-
-
