@@ -13,9 +13,9 @@ from torchvision import transforms
 from torchvision import datasets
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from resnet import ResNet
-from data_loader import get_data_loaders, plot_images, get_labels
-from utils import calculate_normalisation_params
+from models.resnet import ResNet
+from datasets.data_loader import get_data_loaders, plot_images, get_labels
+from utils.utils import calculate_normalisation_params
 from train import train
 
 

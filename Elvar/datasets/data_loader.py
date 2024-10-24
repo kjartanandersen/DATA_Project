@@ -2,40 +2,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import torch
-from torchvision import datasets
-from torchvision import transforms
+from torchvision import datasets, transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 
-def get_labels():
-    return [
-        'airplane',
-        'automobile',
-        'bird',
-        'cat',
-        'deer',
-        'dog',
-        'frog',
-        'horse',
-        'ship',
-        'truck'
-    ]
+from configs.data_configs import DATASETS
 
-def get_data_loaders(data_dir,
-                     batch_size,
-                     train_transform,
-                     test_transform,
-                     shuffle=True,
-                     num_workers=4,
+def get_labels(dataset_name):
+    return DATASETS[dataset_name]['labels']
+
+def get_data_loaders(dataset_name, 
+                     data_dir, 
+                     batch_size, 
+                     train_transform, 
+                     test_transform, 
+                     shuffle=True, 
+                     num_workers=4, 
                      pin_memory=False):
     """
-    Adapted from: https://gist.github.com/kevinzakka/d33bf8d6c7f06a9d8c76d97a7879f5cb
-
     Utility function for loading and returning train and test
-    multi-process iterators over the CIFAR-10 dataset.
+    multi-process iterators over the specified dataset.
     If using CUDA, set pin_memory to True.
 
     Params
     ------
+    - dataset_name: name of the dataset (e.g., 'cifar10', 'fashionMNIST')
     - data_dir: path directory to the dataset.
     - batch_size: how many samples per batch to load.
     - train_transform: pytorch transforms for the training set
@@ -50,13 +40,16 @@ def get_data_loaders(data_dir,
     - test_loader:  test set iterator.
     """
 
+    # Retrieve dataset configuration
+    dataset_config = DATASETS[dataset_name]
+
     # Load the datasets
-    train_dataset = datasets.CIFAR10(
+    train_dataset = dataset_config['dataset_class'](
         root=data_dir, train=True,
         download=True, transform=train_transform,
     )
 
-    test_dataset = datasets.CIFAR10(
+    test_dataset = dataset_config['dataset_class'](
         root=data_dir, train=False,
         download=True, transform=test_transform,
     )
@@ -81,19 +74,8 @@ def plot_images(images, cls_true, cls_pred=None):
     Adapted from https://github.com/Hvass-Labs/TensorFlow-Tutorials/
     """
 
-    # CIFAR10 labels
-    label_names = [
-        'airplane',
-        'automobile',
-        'bird',
-        'cat',
-        'deer',
-        'dog',
-        'frog',
-        'horse',
-        'ship',
-        'truck'
-    ]
+    # Retrieve label names from dataset configuration
+    label_names = get_labels('cifar10')  # Update this to use dataset_name
 
     fig, axes = plt.subplots(3, 3)
 
@@ -116,3 +98,19 @@ def plot_images(images, cls_true, cls_pred=None):
     plt.show()
 
 
+# Example usage:
+dataset_name = 'cifar10'
+data_dir = DATASETS[dataset_name]['data_dir']
+batch_size = 32
+train_transform = DATASETS[dataset_name]['transform_train']
+test_transform = DATASETS[dataset_name]['transform_test']
+
+train_loader, test_loader = get_data_loaders(dataset_name, 
+                                              data_dir, 
+                                              batch_size, 
+                                              train_transform, 
+                                              test_transform)
+
+print(get_labels('cifar10'))
+print(get_labels('fashionMNIST'))
+		
