@@ -20,12 +20,11 @@ from train import train
 
 
 import warnings
-warnings.filterwarnings('ignore')
+
+warnings.filterwarnings("ignore")
 
 # GLOBALS
 # -----------------------
-
-
 
 
 # SET FINAL TRANSFORMS WITH NORMALISATION
@@ -36,22 +35,18 @@ warnings.filterwarnings('ignore')
 # [x] For testing, we only evaluate the single view of the original 32×32 image.
 
 
-
-
 def train_net(
-              train_loader,
-              test_loader,
-              n=3,
-              epochs=164,
-              lr=0.1,
-              momentum=0.9,
-              weight_decay=0.0001,
-              milestones=[82, 123],
-              gamma=0.1,
-              plain=False,
-    ):
-
-
+    train_loader,
+    test_loader,
+    n=3,
+    epochs=164,
+    lr=0.1,
+    momentum=0.9,
+    weight_decay=0.0001,
+    milestones=[82, 123],
+    gamma=0.1,
+    plain=False,
+):
     # TRAINING PARAMETERS
     # -------------------------
 
@@ -82,9 +77,8 @@ def train_net(
     ns = [n]
 
     for n in ns:
-        print(f'Training plain ResNet with {n} Layers')
+        print(f"Training plain ResNet with {n} Layers")
         # Reload data
-
 
         # Create model
         if plain:
@@ -92,54 +86,75 @@ def train_net(
         else:
             model = ResNet(n, shortcuts=True)
         criterion = nn.NLLLoss()
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum,
-                              weight_decay=weight_decay)
-        scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
-                                                   milestones=milestones, gamma=gamma)
-
+        optimizer = optim.SGD(
+            model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
+        )
+        scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer, milestones=milestones, gamma=gamma
+        )
 
         results_file = f'results/{"plain_" if plain else ""}resnet_{6*n+2}.csv'
         model_file = f'pretrained/{"plain_" if plain else ""}resnet_{6*n+2}.pt'
-        train(model,
-              epochs,
-              train_loader,
-              test_loader,
-              criterion,
-              optimizer,
-              results_file,
-              scheduler=scheduler,
-              MODEL_PATH=model_file)
+        train(
+            model,
+            epochs,
+            train_loader,
+            test_loader,
+            criterion,
+            optimizer,
+            results_file,
+            scheduler=scheduler,
+            MODEL_PATH=model_file,
+        )
 
-def test_net(train_transform, test_transform, n=3, plain=False, data_dir='data/cifar10', batch_size=128):
+
+def test_net(
+    test_loader,
+    train_transform,
+    test_transform,
+    n=3,
+    plain=False,
+    data_dir="data/cifar10",
+    batch_size=128,
+):
     # GLOBALS
     # -----------------------
-    model_file = f'pretrained/plain_resnet_{6*n+2}.pt'
+    model_file = f'pretrained/{"plain_" if plain else ""}resnet_{6*n+2}.pt'
     classes = get_labels()
 
-
-
-
-        # SET FINAL TRANSFORMS WITH NORMALISATION
+    # SET FINAL TRANSFORMS WITH NORMALISATION
 
     # [x] simple data augmentation in [24]
     # [x] 4 pixels are padded on each side,
     # [x] and a 32×32 crop is randomly sampled from the padded image or its horizontal flip.
     # [x] For testing, we only evaluate the single view of the original 32×32 image.
 
-    _, test_data = get_data_loaders(
-        data_dir,
-        batch_size,
-        train_transform,
-        test_transform,
-        shuffle=True,
-        num_workers=4,
-        pin_memory=True
-    )
+    if plain:
+        net = ResNet(n, shortcuts=False)
+    else:
+        net = ResNet(n, shortcuts=True)
+    net.load_state_dict(torch.load(model_file, weights_only=True))
 
-    data_iter = iter(test_data)
+    net.eval()
+
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels = data
+            outputs = net(images)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    print(f"Accuracy of the network on the 10000 test images: {100 * correct / total}%")
+
+    """
+    data_iter = iter(test_loader)
     images, labels = next(data_iter)
 
-    print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
+    print("GroundTruth: ", " ".join(f"{classes[labels[j]]:5s}" for j in range(4)))
 
     if plain:
         net = ResNet(n, shortcuts=False)
@@ -151,5 +166,6 @@ def test_net(train_transform, test_transform, n=3, plain=False, data_dir='data/c
 
     _, predicted = torch.max(outputs, 1)
 
-    print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
-                                  for j in range(4)))
+    print("Predicted: ", " ".join("%5s" % classes[predicted[j]] for j in range(4)))
+
+    """
