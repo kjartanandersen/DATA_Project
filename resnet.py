@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-import torch.nn.functional as F
+# import torch.nn.functional as F
 
 """
 Questions?
@@ -144,16 +144,16 @@ class ResNet(nn.Module):
         z = self.bnIn(z)
         z = self.relu(z)
 
-        for l in self.stack1:
-            z = l(z, shortcuts=self.shortcuts)
+        for layer in self.stack1:
+            z = layer(z, shortcuts=self.shortcuts)
 
         z = self.stack2a(z, shortcuts=self.shortcuts)
-        for l in self.stack2b:
-            z = l(z, shortcuts=self.shortcuts)
+        for layer in self.stack2b:
+            z = layer(z, shortcuts=self.shortcuts)
 
         z = self.stack3a(z, shortcuts=self.shortcuts)
-        for l in self.stack3b:
-            z = l(z, shortcuts=self.shortcuts)
+        for layer in self.stack3b:
+            z = layer(z, shortcuts=self.shortcuts)
 
         z = self.avgpool(z)
         z = z.view(z.size(0), -1)

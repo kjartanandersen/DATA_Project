@@ -13,6 +13,8 @@ def evaluate(model, data_loader, device):
     - data_loader: A Pytorch data loader object
     """
 
+    conf_matrix = np.zeros((10, 10), dtype=int)
+
     y_true = np.array([], dtype=int)
     y_pred = np.array([], dtype=int)
 
@@ -26,13 +28,17 @@ def evaluate(model, data_loader, device):
             y_true = np.concatenate((y_true, labels.cpu()))
             y_pred = np.concatenate((y_pred, predicted.cpu()))
 
+            conf_matrix += np.bincount(10 * labels.cpu().numpy() + predicted.cpu().numpy(),
+                                       minlength=100).reshape(10, 10)
+
     error = np.sum(y_pred != y_true) / len(y_true)
-    return error
+
+    return error, conf_matrix
 
 
 
 def train(model, epochs, train_loader, test_loader, criterion,
-          optimizer, RESULTS_PATH, scheduler=None, MODEL_PATH=None):
+          optimizer, scheduler=None, MODEL_PATH=None):
     """
     End to end training as described by the original resnet paper:
     https://arxiv.org/abs/1512.03385
@@ -69,6 +75,7 @@ def train(model, epochs, train_loader, test_loader, criterion,
 
             # get the inputs
             inputs, labels = data
+            
             inputs, labels = inputs.to(device), labels.to(device)
 
             # zero the parameter gradients
@@ -93,16 +100,23 @@ def train(model, epochs, train_loader, test_loader, criterion,
         # Record metrics
         model.eval()
         train_loss = loss.item()
-        train_err = evaluate(model, train_loader, device)
-        test_err = evaluate(model, test_loader, device)
+        train_err, _ = evaluate(model, train_loader, device)
+        test_err, conf_matrix = evaluate(model, test_loader, device)
         results_df.loc[epoch] = [train_loss, train_err, test_err]
-        results_df.to_csv(RESULTS_PATH)
+        results_df.to_csv(MODEL_PATH + "_results.csv")
         print(f'train_err: {train_err} test_err: {test_err}')
+        print()
+        print("Confusion Matrix:")
+        print(conf_matrix)
 
         # Save best model
         if MODEL_PATH and (test_err < best_test_err):
-            torch.save(model.state_dict(), MODEL_PATH)
+            torch.save(model.state_dict(), MODEL_PATH + ".pt")
             best_test_err = test_err
+        
+        if conf_matrix is not None:
+            with open(MODEL_PATH + "_conf_matrix.txt", "w") as f:
+                f.write(str(conf_matrix))
 
 
 

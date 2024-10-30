@@ -1,25 +1,21 @@
-import os
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+
 # import seaborn as sns
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 import torch.optim as optim
 
-from torchvision import transforms
-from torchvision import datasets
-from torch.utils.data.sampler import SubsetRandomSampler
-
 from resnet import ResNet
-from data_loader import get_data_loaders, plot_images, get_labels
-from utils import calculate_normalisation_params
 from train import train
 
+from torchvision import transforms
+from DatasetPicker import DatasetPicker
+
+from data_loader import get_data_loaders
 
 import warnings
+
+import os
 
 warnings.filterwarnings("ignore")
 
@@ -36,8 +32,6 @@ warnings.filterwarnings("ignore")
 
 
 def train_net(
-    train_loader,
-    test_loader,
     n=3,
     epochs=164,
     lr=0.1,
@@ -46,6 +40,8 @@ def train_net(
     milestones=[82, 123],
     gamma=0.1,
     plain=False,
+    train_dataset=DatasetPicker.FASHION_MNIST,
+    test_dataset=DatasetPicker.FASHION_MNIST
 ):
     # TRAINING PARAMETERS
     # -------------------------
@@ -74,53 +70,122 @@ def train_net(
 
     # Train a plain network with 18 layers
     # and no shortcuts
-    ns = [n]
 
-    for n in ns:
-        print(f"Training plain ResNet with {n} Layers")
-        # Reload data
+    data_dir = 'data/cifar10'
+    batch_size = 128
 
-        # Create model
-        if plain:
-            model = ResNet(n, shortcuts=False)
-        else:
-            model = ResNet(n, shortcuts=True)
-        criterion = nn.NLLLoss()
-        optimizer = optim.SGD(
-            model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
+
+
+
+    # Normalisation parameters fo CIFAR10
+    means = [0.4918687901200927, 0.49185976472299225, 0.4918583862227116]
+    stds  = [0.24697121702736, 0.24696766978537033, 0.2469719877121087]
+
+    normalize = transforms.Normalize(
+        mean=means,
+        std=stds,
+    )
+
+    train_transform = transforms.Compose([ 
+        # 4 pixels are padded on each side, 
+        transforms.Grayscale(num_output_channels=3),
+        transforms.Pad(4),
+        # a 32×32 crop is randomly sampled from the 
+        # padded image or its horizontal flip.
+        transforms.RandomHorizontalFlip(0.5),
+        transforms.RandomCrop(32),
+        transforms.ToTensor(),
+        normalize
+    ])
+
+    test_transform = transforms.Compose([
+        # For testing, we only evaluate the single 
+        # view of the original 32×32 image.
+        transforms.Grayscale(num_output_channels=3),
+        transforms.ToTensor(),
+        normalize
+    ])
+
+    if train_dataset == test_dataset:
+        print("Getting data loaders for same dataset")
+        train_loader, test_loader = get_data_loaders(
+            data_dir,
+            batch_size,
+            train_transform,
+            test_transform,
+            train_dataset,
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True,
         )
-        scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=milestones, gamma=gamma
+    else:
+        print("Getting train data loader")
+        train_loader, _ = get_data_loaders(
+            data_dir,
+            batch_size,
+            train_transform,
+            test_transform,
+            train_dataset,
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True,
+        )
+        print("Getting test data loader")
+        _, test_loader = get_data_loaders(
+            data_dir,
+            batch_size,
+            train_transform,
+            test_transform,
+            test_dataset,
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True,
         )
 
-        results_file = f'results/{"plain_" if plain else ""}resnet_{6*n+2}.csv'
-        model_file = f'pretrained/{"plain_" if plain else ""}resnet_{6*n+2}.pt'
-        train(
-            model,
-            epochs,
-            train_loader,
-            test_loader,
-            criterion,
-            optimizer,
-            results_file,
-            scheduler=scheduler,
-            MODEL_PATH=model_file,
-        )
+    
+    print(f"Training ResNet with {n} Layers")
+    # Reload data
+
+    # Create model
+    if plain:
+        model = ResNet(n, shortcuts=False)
+    else:
+        model = ResNet(n, shortcuts=True)
+    criterion = nn.NLLLoss()
+    optimizer = optim.SGD(
+        model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
+    )
+    scheduler = optim.lr_scheduler.MultiStepLR(
+        optimizer, milestones=milestones, gamma=gamma
+    )
+
+    model_folder = f'{"plain_" if plain else ""}resnet_{6*n+2}_{train_dataset.name}_{test_dataset.name}'
+
+    if not os.path.exists("pretrained/" + model_folder):
+        os.makedirs("pretrained/" + model_folder)
+
+    # results_name = f'results/{"plain_" if plain else ""}resnet_{6*n+2}/{"plain_" if plain else ""}resnet_{6*n+2}'
+    model_name = "pretrained/" + model_folder + "/" + model_folder
+    train(
+        model,
+        epochs,
+        train_loader,
+        test_loader,
+        criterion,
+        optimizer,
+        scheduler=scheduler,
+        MODEL_PATH=model_name,
+    )
 
 
 def test_net(
     test_loader,
-    train_transform,
-    test_transform,
     n=3,
-    plain=False,
-    data_dir="data/cifar10",
-    batch_size=128,
+    plain=False
 ):
     # GLOBALS
     # -----------------------
     model_file = f'pretrained/{"plain_" if plain else ""}resnet_{6*n+2}.pt'
-    classes = get_labels()
 
     # SET FINAL TRANSFORMS WITH NORMALISATION
 
