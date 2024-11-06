@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import torch
+import time
+import datetime
 
 
 class EarlyStopper:
@@ -68,8 +70,8 @@ def evaluate(model, data_loader, device, is_last_epoch=False):
 
 
 
-def train(model, epochs, train_loader, test_loader, criterion,
-          optimizer, scheduler=None, MODEL_PATH=None):
+def train(model, train_loader, test_loader, criterion,
+          optimizer, scheduler=None, MODEL_PATHS=None):
     """
     End to end training as described by the original resnet paper:
     https://arxiv.org/abs/1512.03385
@@ -85,7 +87,7 @@ def train(model, epochs, train_loader, test_loader, criterion,
     - test_loader:
            PyTorch dataloader object for test set
     """
-
+    start_time = time.time()
     # Run on GPU if available
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
@@ -101,7 +103,17 @@ def train(model, epochs, train_loader, test_loader, criterion,
     print('Epoch \tBatch \tNLLLoss_Train')
 
     early_stopper = EarlyStopper(patience=3, min_delta=10)
-    for epoch in range(epochs):  # loop over the dataset multiple times
+    for epoch in range(100):  # loop over the dataset multiple times
+        if epoch < 20:
+            MODEL_PATH = MODEL_PATHS[0]
+            model.set_folder(MODEL_PATH)
+        elif epoch < 50:
+            MODEL_PATH = MODEL_PATHS[1]
+            model.set_folder(MODEL_PATH)
+        else:
+            MODEL_PATH = MODEL_PATHS[2]
+            model.set_folder(MODEL_PATH)
+
 
         model.train()
         running_loss  = 0.0
@@ -135,7 +147,7 @@ def train(model, epochs, train_loader, test_loader, criterion,
         # Record metrics
         model.eval()
         train_loss = loss.item()
-        if epoch == epochs - 1:
+        if epoch in [19, 49, 99]:
             train_err, conf_matrix = evaluate(model, train_loader, device, is_last_epoch=True)
             test_err, conf_matrix = evaluate(model, test_loader, device, is_last_epoch=True)
         else:
@@ -143,20 +155,26 @@ def train(model, epochs, train_loader, test_loader, criterion,
             test_err, conf_matrix = evaluate(model, test_loader, device)
         results_df.loc[epoch] = [train_loss, train_err, test_err]
         
+        
         results_df.to_csv(MODEL_PATH + "_results.csv")
         print(f'train_err: {train_err} test_err: {test_err}')
         print()
-        if epoch == epochs - 1:
+        if epoch in [19, 49, 99]:
             print("Confusion Matrix: ")
             print(conf_matrix)
             with open(MODEL_PATH + "_conf_matrix.txt", "w") as f:
                 f.write(str(conf_matrix))
+            end_time = time.time()
+            print(f"Time taken: {end_time - start_time}")
+            with open("pretrained/" + MODEL_PATH + "time.txt", "w") as f:
+                f.write(f"Time taken: {datetime.datetime.fromtimestamp(end_time - start_time).strftime('%H:%M:%S')}") 
         
         if early_stopper.early_stop(train_err):
             print(f"Early Stopped at epoch {epoch}")
             break
 
         # Save best model
+        
         if MODEL_PATH and (test_err < best_test_err):
             torch.save(model.state_dict(), MODEL_PATH + ".pt")
             best_test_err = test_err

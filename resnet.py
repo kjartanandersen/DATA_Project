@@ -147,24 +147,27 @@ class ResNet(nn.Module):
         z = self.relu(z)
 
         if self.training:
-            plt.imsave("pretrained/" + self.model_folder + "/images/" + "before_stack1.png", z[0,0].detach().cpu().numpy())
+            plt.imsave(self.model_folder + "/images/" + "before_stack1.png", z[0,0].detach().cpu().numpy())
 
         for layer in self.stack1:
             z = layer(z, shortcuts=self.shortcuts)
 
         if self.training:
-            plt.imsave("pretrained/" + self.model_folder + "/images/" + "after_stack1.png", z[0,0].detach().cpu().numpy())
+            plt.imsave(self.model_folder + "/images/" + "after_stack1.png", z[0,0].detach().cpu().numpy())
         z = self.stack2a(z, shortcuts=self.shortcuts)
         for layer in self.stack2b:
             z = layer(z, shortcuts=self.shortcuts)
         if self.training:
-            plt.imsave("pretrained/" + self.model_folder + "/images/" + "after_stack2.png", z[0,0].detach().cpu().numpy())
+            plt.imsave(self.model_folder + "/images/" + "after_stack2.png", z[0,0].detach().cpu().numpy())
         z = self.stack3a(z, shortcuts=self.shortcuts)
         for layer in self.stack3b:
             z = layer(z, shortcuts=self.shortcuts)
         if self.training:
-            plt.imsave("pretrained/" + self.model_folder + "/images/" + "after_stack3.png", z[0,0].detach().cpu().numpy())
+            plt.imsave(self.model_folder + "/images/" + "after_stack3.png", z[0,0].detach().cpu().numpy())
         z = self.avgpool(z)
         z = z.view(z.size(0), -1)
         z = self.fcOut(z)
         return self.softmax(z)
+    
+    def set_folder(self, model_folder):
+        self.model_folder = model_folder

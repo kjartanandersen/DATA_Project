@@ -33,7 +33,6 @@ warnings.filterwarnings("ignore")
 
 def train_net(
     n=3,
-    epochs=164,
     lr=0.1,
     momentum=0.9,
     weight_decay=0.0001,
@@ -150,13 +149,19 @@ def train_net(
     model_folder = f'{"plain_" if plain else ""}resnet_{6*n+2}_{train_dataset.name}_{test_dataset.name}'
     if not os.path.exists("pretrained/" + model_folder):
         os.makedirs("pretrained/" + model_folder)
-    if not os.path.exists("pretrained/" + model_folder + "/images"):
-        os.makedirs("pretrained/" + model_folder + "/images")
+    
+
+    for i in [20, 50, 100]:
+        if not os.path.exists("pretrained/" + model_folder + f"/_{i}_epoch"):
+            os.makedirs("pretrained/" + model_folder + f"/_{i}_epoch")
+        if not os.path.exists("pretrained/" + model_folder + f"/_{i}_epoch/images"):
+            os.makedirs("pretrained/" + model_folder + f"/_{i}_epoch/images")
+
     
     if plain:
-        model = ResNet(n, shortcuts=False, model_folder=model_folder)
+        model = ResNet(n, shortcuts=False)
     else:
-        model = ResNet(n, shortcuts=True, model_folder=model_folder)
+        model = ResNet(n, shortcuts=True)
     criterion = nn.NLLLoss()
     optimizer = optim.SGD(
         model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
@@ -170,16 +175,21 @@ def train_net(
     
 
     # results_name = f'results/{"plain_" if plain else ""}resnet_{6*n+2}/{"plain_" if plain else ""}resnet_{6*n+2}'
-    model_name = "pretrained/" + model_folder + "/" + model_folder
+    
+    model_names = [
+        "pretrained/" + model_folder + "/" + "_20_epoch" ,
+        "pretrained/" + model_folder + "/" + "_50_epoch" ,
+        "pretrained/" + model_folder + "/" + "_100_epoch" ,
+    ]
+    # model_name = "pretrained/" + model_folder + "/" + model_folder
     train(
         model,
-        epochs,
         train_loader,
         test_loader,
         criterion,
         optimizer,
         scheduler=scheduler,
-        MODEL_PATH=model_name,
+        MODEL_PATHS=model_names,
     )
 
 
