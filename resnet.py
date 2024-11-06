@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import matplotlib.pyplot as plt
 # import torch.nn.functional as F
 
 """
@@ -102,9 +103,10 @@ class block(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, n=3, shortcuts=True):
+    def __init__(self, n=3, shortcuts=True, model_folder=""):
         super().__init__()
         self.shortcuts = shortcuts
+        self.model_folder = model_folder
 
         # Input
         self.convIn = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
@@ -144,17 +146,24 @@ class ResNet(nn.Module):
         z = self.bnIn(z)
         z = self.relu(z)
 
+        if self.training:
+            plt.imsave("pretrained/" + self.model_folder + "/images/" + "before_stack1.png", z[0,0].detach().cpu().numpy())
+
         for layer in self.stack1:
             z = layer(z, shortcuts=self.shortcuts)
 
+        if self.training:
+            plt.imsave("pretrained/" + self.model_folder + "/images/" + "after_stack1.png", z[0,0].detach().cpu().numpy())
         z = self.stack2a(z, shortcuts=self.shortcuts)
         for layer in self.stack2b:
             z = layer(z, shortcuts=self.shortcuts)
-
+        if self.training:
+            plt.imsave("pretrained/" + self.model_folder + "/images/" + "after_stack2.png", z[0,0].detach().cpu().numpy())
         z = self.stack3a(z, shortcuts=self.shortcuts)
         for layer in self.stack3b:
             z = layer(z, shortcuts=self.shortcuts)
-
+        if self.training:
+            plt.imsave("pretrained/" + self.model_folder + "/images/" + "after_stack3.png", z[0,0].detach().cpu().numpy())
         z = self.avgpool(z)
         z = z.view(z.size(0), -1)
         z = self.fcOut(z)

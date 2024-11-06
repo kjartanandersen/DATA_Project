@@ -147,10 +147,16 @@ def train_net(
     # Reload data
 
     # Create model
+    model_folder = f'{"plain_" if plain else ""}resnet_{6*n+2}_{train_dataset.name}_{test_dataset.name}'
+    if not os.path.exists("pretrained/" + model_folder):
+        os.makedirs("pretrained/" + model_folder)
+    if not os.path.exists("pretrained/" + model_folder + "/images"):
+        os.makedirs("pretrained/" + model_folder + "/images")
+    
     if plain:
-        model = ResNet(n, shortcuts=False)
+        model = ResNet(n, shortcuts=False, model_folder=model_folder)
     else:
-        model = ResNet(n, shortcuts=True)
+        model = ResNet(n, shortcuts=True, model_folder=model_folder)
     criterion = nn.NLLLoss()
     optimizer = optim.SGD(
         model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
@@ -159,10 +165,9 @@ def train_net(
         optimizer, milestones=milestones, gamma=gamma
     )
 
-    model_folder = f'{"plain_" if plain else ""}resnet_{6*n+2}_{train_dataset.name}_{test_dataset.name}'
+    
 
-    if not os.path.exists("pretrained/" + model_folder):
-        os.makedirs("pretrained/" + model_folder)
+    
 
     # results_name = f'results/{"plain_" if plain else ""}resnet_{6*n+2}/{"plain_" if plain else ""}resnet_{6*n+2}'
     model_name = "pretrained/" + model_folder + "/" + model_folder

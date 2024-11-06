@@ -2,7 +2,27 @@ import numpy as np
 import pandas as pd
 import torch
 
-def evaluate(model, data_loader, device):
+
+class EarlyStopper:
+    def __init__(self, patience=1, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.min_validation_loss = float('inf')
+        self.early_stopped = False
+
+    def early_stop(self, validation_loss):
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            self.counter = 0
+        elif validation_loss > (self.min_validation_loss + self.min_delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                self.early_stopped = True
+                return True
+        return False
+
+def evaluate(model, data_loader, device, is_last_epoch=False):
     """
     Calculate classification error (%) for given model
     and data set.
@@ -13,10 +33,19 @@ def evaluate(model, data_loader, device):
     - data_loader: A Pytorch data loader object
     """
 
-    conf_matrix = np.zeros((10, 10), dtype=int)
 
     y_true = np.array([], dtype=int)
     y_pred = np.array([], dtype=int)
+    conf_matrix = 1
+    if is_last_epoch:
+
+        conf_matrix = np.array([[0]*10]*10, dtype=object)
+        
+        
+
+        
+
+    
 
     with torch.no_grad():
         for data in data_loader:
@@ -25,11 +54,13 @@ def evaluate(model, data_loader, device):
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
 
-            y_true = np.concatenate((y_true, labels.cpu()))
-            y_pred = np.concatenate((y_pred, predicted.cpu()))
+            y_true = np.append(y_true, labels.cpu().numpy())
+            y_pred = np.append(y_pred, predicted.cpu().numpy())
 
-            conf_matrix += np.bincount(10 * labels.cpu().numpy() + predicted.cpu().numpy(),
-                                       minlength=100).reshape(10, 10)
+            if is_last_epoch:
+                for i in range(len(labels)):
+                    conf_matrix[labels[i]][predicted[i]] += 1
+
 
     error = np.sum(y_pred != y_true) / len(y_true)
 
@@ -64,8 +95,12 @@ def train(model, epochs, train_loader, test_loader, criterion,
     # -------------------------------
     cols       = ['epoch', 'train_loss', 'train_err', 'test_err']
     results_df = pd.DataFrame(columns=cols).set_index('epoch')
+
+    # classes = ['index','plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    
     print('Epoch \tBatch \tNLLLoss_Train')
 
+    early_stopper = EarlyStopper(patience=3, min_delta=10)
     for epoch in range(epochs):  # loop over the dataset multiple times
 
         model.train()
@@ -100,24 +135,37 @@ def train(model, epochs, train_loader, test_loader, criterion,
         # Record metrics
         model.eval()
         train_loss = loss.item()
-        train_err, _ = evaluate(model, train_loader, device)
-        test_err, conf_matrix = evaluate(model, test_loader, device)
+        if epoch == epochs - 1:
+            train_err, conf_matrix = evaluate(model, train_loader, device, is_last_epoch=True)
+            test_err, conf_matrix = evaluate(model, test_loader, device, is_last_epoch=True)
+        else:
+            train_err, _ = evaluate(model, train_loader, device)
+            test_err, conf_matrix = evaluate(model, test_loader, device)
         results_df.loc[epoch] = [train_loss, train_err, test_err]
+        
         results_df.to_csv(MODEL_PATH + "_results.csv")
         print(f'train_err: {train_err} test_err: {test_err}')
         print()
-        print("Confusion Matrix:")
-        print(conf_matrix)
+        if epoch == epochs - 1:
+            print("Confusion Matrix: ")
+            print(conf_matrix)
+            with open(MODEL_PATH + "_conf_matrix.txt", "w") as f:
+                f.write(str(conf_matrix))
+        
+        if early_stopper.early_stop(train_err):
+            print(f"Early Stopped at epoch {epoch}")
+            break
 
         # Save best model
         if MODEL_PATH and (test_err < best_test_err):
             torch.save(model.state_dict(), MODEL_PATH + ".pt")
             best_test_err = test_err
         
-        if conf_matrix is not None:
-            with open(MODEL_PATH + "_conf_matrix.txt", "w") as f:
-                f.write(str(conf_matrix))
+        
 
+    if early_stopper.early_stopped:
+        if MODEL_PATH and (test_err < best_test_err):
+            torch.save(model.state_dict(), MODEL_PATH + ".pt")
 
 
     print('Finished Training')
