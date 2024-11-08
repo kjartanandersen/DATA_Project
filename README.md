@@ -155,9 +155,6 @@ python Plots-and-figures/Comparisson.py
 ```bash
 DATA_Project/
 ├── data/                                           # Data loading and preprocessing scripts
-├── models/                                         # ResNet model implementations
-├── results/                                        # Results from experiments
-├── train.py                                        # Script to train the model
 ├── Plots-and-figures                               # Script to evaluate the model
     ├── Plots/                                      # Save location of plots
     ├── resnet_20_CIFAR10_CIFAR10/                  # data for plots Cifar-10, 20 layers
@@ -167,11 +164,17 @@ DATA_Project/
     ├── resnet_44_CIFAR10_CIFAR10                   # data for plots Fashion, 32 layers
     ├── resnet_44_FASHION_MNIST_FASHION_MNIST       # data for plots Fashion, 44 layers
     ├── Comparisson.py                              # Plots comparisson
-    ├── TestErrprPlots.py                           # Plots test error vs Epochs for all models
-    └── confusion.py                                # Generates confusion matrix plots for all models
-├── requirements.txt                  # List of required Python packages
-├── T_809_DATA___Project_Report.pdf   # Detailed project report
-└── README.md                         # Project README file
+    ├── TestErrprPlots.py                           # Plots test error vs Epochs for all 
+    └── confusion.py                                # Generates confusion matrix plots
+├── pretrained/                                     # ResNet trained models
+├── data_loader.py/                                 # Script for loading torch dataloaders
+├── DatasetPicker.py/                               # Enumerator class for picking datasets
+├── train.py                                        # Script to train the model
+├── train_test_func.py                              # Script for setting up the training
+├── main.py                                         # Example script
+├── requirements.txt                                # List of required Python packages
+├── T_809_DATA___Project_Report.pdf                 # Detailed project report
+└── README.md                                       # Project README file
 ```
 
 ## Authors
