@@ -13,7 +13,6 @@ This repository contains the code used for the project **"Impact of CNNs on Imag
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Authors](#authors)
-- [License](#license)
 
 ## Introduction
 
@@ -95,6 +94,75 @@ Results from the experiments, including training/test error graphs and confusion
 - numpy
 - matplotlib
 
+
+## Usage
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/kjartanandersen/DATA_Project.git
+cd DATA_Project
+```
+
+### Training the Model
+Train the ResNet model using the provided train.py script.
+
+Train a ResNet-20 model on CIFAR-10
+```bash
+SKRIFA HVERNIG TRAINAD CIFAR
+```
+Train on Fashion-MNIST:
+```bash
+SKRIFA HVERNIG TRAINAD FASHION
+```
+
+### Evaluating the Model
+
+After training the model, you can evaluate its performance and generate plots using the scripts available in the [`Plots-and-figures`](https://github.com/kjartanandersen/DATA_Project/tree/main/Plots-and-figures) directory.
+
+**Generate Training and Test Error Plots:**
+
+You can generate plots for training and test error over epochs using:
+
+```bash
+python Plots-and-figures/TestErrprPlots.py
+```
+
+***Generate Confusion Matrix:***
+To create a confusion matrix for the model's predictions:
+```bash
+python Plots-and-figures/confusion.py
+```
+***Generate Comparisson plots:***
+To create a the plots for the Comparisson criteria in the report:
+```bash
+python Plots-and-figures/Comparisson.py
+```
+
+## Project Structure
+
+!!!TIL DÆMIS BREYTA ÞEGAR ER KOMIÐ LOKA STRUCTURE!!!
+```bash
+DATA_Project/
+├── data/                                           # Data loading and preprocessing scripts
+├── models/                                         # ResNet model implementations
+├── results/                                        # Results from experiments
+├── train.py                                        # Script to train the model
+├── Plots-and-figures                               # Script to evaluate the model
+    ├── Plots/                                      # Save location of plots
+    ├── resnet_20_CIFAR10_CIFAR10/                  # data for plots Cifar-10, 20 layers
+    ├── resnet_20_FASHION_MNIST_FASHION_MNIST/      # data for plots Cifar-10, 32 layers
+    ├── resnet_32_CIFAR10_CIFAR10/                  # data for plots Cifar-10, 44 layers
+    ├── resnet_32_FASHION_MNIST_FASHION_MNIST       # data for plots Fashion, 20 layers
+    ├── resnet_44_CIFAR10_CIFAR10                   # data for plots Fashion, 32 layers
+    ├── resnet_44_FASHION_MNIST_FASHION_MNIST       # data for plots Fashion, 44 layers
+    ├── Comparisson.py                              # Plots comparisson
+    ├── TestErrprPlots.py                           # Plots test error vs Epochs for all models
+    └── confusion.py                                # Generates confusion matrix plots for all models
+├── requirements.txt                  # List of required Python packages
+├── T_809_DATA___Project_Report.pdf   # Detailed project report
+└── README.md                         # Project README file
+```
 
 ## Authors
 
