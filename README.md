@@ -79,12 +79,17 @@ We experimented with varying the layer depth and the number of training epochs. 
 
 ## Results
 
-Results from the experiments, including training/test error graphs and confusion matrices, are detailed in the [T_809_DATA___Project_Report.pdf](T_809_DATA___Project_Report.pdf) included in this repository.
+The results from our experiments, including training/test error graphs and confusion matrices, are documented in the [T_809_DATA___Project_Report.pdf](T_809_DATA___Project_Report.pdf) available in this repository.
 
 **Key Findings:**
 
-- Increasing the number of layers generally improves accuracy but may lead to overfitting if not properly regularized.
-- The ResNet architecture effectively mitigates the degradation problem observed in very deep networks.
+- While increasing the number of layers generally enhances accuracy, deeper models do not always yield better performance and may lead to overfitting, particularly with smaller datasets.
+- The ResNet-32 model demonstrated better overall performance compared to the deeper ResNet-44, indicating that there is an optimal depth for balancing accuracy and training efficiency.
+- ResNet's use of skip connections effectively mitigates the degradation problem found in very deep networks, supporting stable training and preventing vanishing gradients.
+- Training stability was observed after the initial phase, particularly after the learning rate was reduced, highlighting the importance of learning rate scheduling.
+- Differences between datasets were evident: Fashion-MNIST models exhibited higher initial accuracy and more consistent training, while CIFAR-10 models required more epochs for significant accuracy gains.
+
+These findings emphasize the need for careful model depth selection and training strategy when working with convolutional neural networks for image classification tasks. Further research could focus on hyperparameter tuning or the application to more complex datasets to explore ResNet's behavior in larger-scale settings.
 
 ## Requirements
 
