@@ -97,13 +97,6 @@ Results from the experiments, including training/test error graphs and confusion
 
 ## Usage
 
-### Clone the Repository
-
-```bash
-git clone https://github.com/kjartanandersen/DATA_Project.git
-cd DATA_Project
-```
-
 ### Training the Model
 Train the ResNet model using the provided scripts.
 
@@ -118,7 +111,7 @@ SKRIFA HVERNIG TRAINAD FASHION
 
 ### Evaluating the Model
 
-After training the model, you can evaluate its performance and generate plots using the scripts available in the [`Plots-and-figures`](https://github.com/kjartanandersen/DATA_Project/tree/main/Plots-and-figures) directory.
+After training the model, its performance via plots was done using the scripts available in the [`Plots-and-figures`](https://github.com/kjartanandersen/DATA_Project/tree/main/Plots-and-figures) directory.
 
 **Generate Training and Test Error Plots:**
 
