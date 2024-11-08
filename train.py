@@ -162,11 +162,11 @@ def train(model, train_loader, test_loader, criterion,
         if epoch in [19, 49, 99]:
             print("Confusion Matrix: ")
             print(conf_matrix)
-            with open(MODEL_PATH + "_conf_matrix.txt", "w") as f:
+            with open(MODEL_PATH + "/_conf_matrix.txt", "w") as f:
                 f.write(str(conf_matrix))
             end_time = time.time()
             print(f"Time taken: {end_time - start_time}")
-            with open("pretrained/" + MODEL_PATH + "time.txt", "w") as f:
+            with open(MODEL_PATH + "/time.txt", "w") as f:
                 f.write(f"Time taken: {datetime.datetime.fromtimestamp(end_time - start_time).strftime('%H:%M:%S')}") 
         
         if early_stopper.early_stop(train_err):

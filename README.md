@@ -93,6 +93,7 @@ Results from the experiments, including training/test error graphs and confusion
 - torchvision
 - numpy
 - matplotlib
+- seaborn
 
 
 ## Usage
@@ -105,15 +106,26 @@ cd DATA_Project
 ```
 
 ### Training the Model
-Train the ResNet model using the provided train.py script.
+Train the ResNet model using the provided function train_net in the train_test_func.py script.
 
-Train a ResNet-20 model on CIFAR-10
+**Parameters:**
+- **n:** Controls number of layers where number of layers is: 6n+2. Defaults to 3
+- **lr:** learning rate. Defaults to 0.1
+- **momentum:** momentum factor. Defaults to 0.9
+- **weight_decay:** weight decay. Defaults to 0.0001
+- **milestones:** epoch milestones for when to apply learning rate decay. Defaults to [82,123]
+- **gamma:** multiplicative factor of learning rate decay. Defaults to 0.1
+- **plain:** set to **True** if a plain CNN is being used, set to **False** if ResNet model is being used. Default to False
+- **train_dataset:** uses the DatasetPicker enumerator class to pick a dataset for training 
+- **test_dataset:** uses the DatasetPicker enumerator class to pick a dataset for testing
+
+### Train a ResNet-20 model on CIFAR-10
 ```bash
-SKRIFA HVERNIG TRAINAD CIFAR
+train_net(n=n, train_dataset=DatasetPicker.CIFAR10, test_dataset=DatasetPicker.CIFAR10)
 ```
-Train on Fashion-MNIST:
+### Train on Fashion-MNIST:
 ```bash
-SKRIFA HVERNIG TRAINAD FASHION
+train_net(n=n, train_dataset=DatasetPicker.FASHION_MNIST, test_dataset=DatasetPicker.FASHION_MNIST)
 ```
 
 ### Evaluating the Model
