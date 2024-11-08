@@ -105,13 +105,13 @@ cd DATA_Project
 ```
 
 ### Training the Model
-Train the ResNet model using the provided train.py script.
+Train the ResNet model using the provided scripts.
 
-Train a ResNet-20 model on CIFAR-10
+Train a ResNet model on CIFAR-10
 ```bash
 SKRIFA HVERNIG TRAINAD CIFAR
 ```
-Train on Fashion-MNIST:
+Train on ResNet model on Fashion-MNIST:
 ```bash
 SKRIFA HVERNIG TRAINAD FASHION
 ```
