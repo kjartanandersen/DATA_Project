@@ -119,11 +119,11 @@ Train the ResNet model using the provided function train_net in the train_test_f
 
 ### Train a ResNet-20 model on CIFAR-10
 ```bash
-train_net(n=n, train_dataset=DatasetPicker.CIFAR10, test_dataset=DatasetPicker.CIFAR10)
+train_net(n=3, train_dataset=DatasetPicker.CIFAR10, test_dataset=DatasetPicker.CIFAR10)
 ```
 ### Train on Fashion-MNIST:
 ```bash
-train_net(n=n, train_dataset=DatasetPicker.FASHION_MNIST, test_dataset=DatasetPicker.FASHION_MNIST)
+train_net(n=3, train_dataset=DatasetPicker.FASHION_MNIST, test_dataset=DatasetPicker.FASHION_MNIST)
 ```
 
 ### Evaluating the Model
