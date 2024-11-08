@@ -151,7 +151,6 @@ python Plots-and-figures/Comparisson.py
 
 ## Project Structure
 
-!!!TIL DÆMIS BREYTA ÞEGAR ER KOMIÐ LOKA STRUCTURE!!!
 ```bash
 DATA_Project/
 ├── data/                                           # Data loading and preprocessing scripts
