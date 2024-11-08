@@ -95,7 +95,9 @@ Results from the experiments, including training/test error graphs and confusion
 - numpy
 - matplotlib
 
-Install the required packages using:
 
-```bash
-pip install -r requirements.txt
+## Authors
+
+- Elvar Þór Sævarsson ([elvars20@ru.is](mailto:elvars20@ru.is))
+- Guðjón Hafsteinn Kristinsson ([gudjonk24@ru.is](mailto:gudjonk24@ru.is))
+- Kjartan Már Andersen ([kjartan23@ru.is](mailto:kjartan23@ru.is))
